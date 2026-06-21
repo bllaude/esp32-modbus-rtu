@@ -1,8 +1,6 @@
 # esp32-modbus-rtu
 
-Lightweight Modbus RTU master/slave library for ESP-IDF. No external dependencies. Single C file + header, built as an IDF component.
-
-## Feat
+Modbus RTU master/slave library for ESP-IDF. No external dependencies, built as an IDF component.
 
 - Full master and slave roles in one component
 - Function codes: FC01 FC02 FC03 FC04 FC05 FC06 FC0F FC10
@@ -43,7 +41,7 @@ idf.py -p /dev/ttyUSB0 flash monitor
 
 ## Usage
 
-### Master
+### master
 
 ```c
 #include "modbus_rtu.h"
@@ -69,7 +67,7 @@ modbus_err_t err = modbus_read_holding_regs(&mb, 1, 0, 4, regs);
 modbus_write_single_reg(&mb, 1, 10, 1234);
 ```
 
-### Slave
+### slave
 
 ```c
 modbus_config_t cfg = {
@@ -94,7 +92,7 @@ mb.on_write = my_write_handler;
 while (1) modbus_slave_poll(&mb);
 ```
 
-## API Ref
+## API
 
 ### Init
 
@@ -103,7 +101,7 @@ while (1) modbus_slave_poll(&mb);
 | `modbus_init(ctx, cfg)` | Initialize UART and internal state |
 | `modbus_deinit(ctx)` | Release UART driver |
 
-### Master
+### master
 
 | Function | FC |
 |---|---|
@@ -116,7 +114,7 @@ while (1) modbus_slave_poll(&mb);
 | `modbus_write_multiple_coils` | 0x0F |
 | `modbus_write_multiple_regs` | 0x10 |
 
-### Slave
+### slave
 
 | Function | Description |
 |---|---|
@@ -138,7 +136,7 @@ MODBUS_ERR_UART
 
 Use `modbus_strerror(err)` for human-readable strings.
 
-## Tests
+## Tested on
 
 - ESP32-WROOM-32 (ESP-IDF v5.2)
 - MAX485 transceiver
