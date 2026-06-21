@@ -29,11 +29,11 @@ DE and RE are typically tied together and driven by a single GPIO (configured as
 Requires ESP-IDF v5.x.
 
 ```bash
-# Clone and enter an example
+# clone and enter an example
 git clone https://github.com/youruser/esp32-modbus-rtu
 cd esp32-modbus-rtu/examples/master_example
 
-# Set target and build
+# set target and build
 idf.py set-target esp32
 idf.py build
 idf.py -p /dev/ttyUSB0 flash monitor
@@ -59,11 +59,11 @@ modbus_config_t cfg = {
 };
 modbus_init(&mb, &cfg);
 
-// Read 4 holding registers from slave 1
+// read 4 holding registers from slave 1
 uint16_t regs[4];
 modbus_err_t err = modbus_read_holding_regs(&mb, 1, 0, 4, regs);
 
-// Write to single register
+// write to single register
 modbus_write_single_reg(&mb, 1, 10, 1234);
 ```
 
@@ -81,20 +81,20 @@ modbus_config_t cfg = {
 };
 modbus_init(&mb, &cfg);
 
-// Populate data model
+// populate data model
 mb.data.holding_regs[0] = 0x1234;
 mb.data.input_regs[0]   = adc_read();
 
-// Optional write callback
+// optional write callback
 mb.on_write = my_write_handler;
 
-// Poll in a dedicated task
+// poll in a dedicated task
 while (1) modbus_slave_poll(&mb);
 ```
 
 ## API
 
-### Init
+### init
 
 | Function | Description |
 |---|---|
