@@ -6,7 +6,7 @@
 
 static const char *TAG = "modbus_rtu";
 
-// ─── CRC16 ───────────────────────────────────────────────────────────────────
+// ─── crc16 ───────────────────────────────────────────────────────────────────
 
 uint16_t modbus_crc16(const uint8_t *buf, uint16_t len)
 {
@@ -21,7 +21,7 @@ uint16_t modbus_crc16(const uint8_t *buf, uint16_t len)
     return crc;
 }
 
-// ─── UART helpers ─────────────────────────────────────────────────────────────
+// ─── uart helpers ─────────────────────────────────────────────────────────────
 
 static void rs485_tx_mode(modbus_ctx_t *ctx)
 {
@@ -49,7 +49,7 @@ static esp_err_t uart_send(modbus_ctx_t *ctx, const uint8_t *data, size_t len)
     return (written == (int)len) ? ESP_OK : ESP_FAIL;
 }
 
-// Read exactly `len` bytes within timeout. Returns bytes read.
+// read exactly `len` bytes within timeout, returns bytes read.
 static int uart_recv(modbus_ctx_t *ctx, uint8_t *buf, size_t len, uint32_t timeout_ms)
 {
     int total = 0;
@@ -69,7 +69,7 @@ static int uart_recv(modbus_ctx_t *ctx, uint8_t *buf, size_t len, uint32_t timeo
     return total;
 }
 
-// ─── Init / Deinit ───────────────────────────────────────────────────────────
+// ─── init / deinit ───────────────────────────────────────────────────────────
 
 modbus_err_t modbus_init(modbus_ctx_t *ctx, const modbus_config_t *cfg)
 {
@@ -121,7 +121,7 @@ void modbus_deinit(modbus_ctx_t *ctx)
     uart_driver_delete(ctx->cfg.uart_port);
 }
 
-// ─── Frame build/parse helpers ───────────────────────────────────────────────
+// ─── frame build/parse helpers ───────────────────────────────────────────────
 
 static uint16_t build_request(uint8_t *buf, uint8_t slave, uint8_t fc,
                                uint16_t addr, uint16_t count)
@@ -146,7 +146,7 @@ static modbus_err_t check_response_crc(const uint8_t *buf, uint16_t len)
     return (calc == recv) ? MODBUS_OK : MODBUS_ERR_CRC;
 }
 
-// ─── Master: generic read ─────────────────────────────────────────────────────
+// ─── master: generic read ─────────────────────────────────────────────────────
 
 static modbus_err_t master_read(modbus_ctx_t *ctx, uint8_t slave, uint8_t fc,
                                  uint16_t start, uint16_t count, uint8_t *raw_out)
@@ -156,7 +156,7 @@ static modbus_err_t master_read(modbus_ctx_t *ctx, uint8_t slave, uint8_t fc,
     if (uart_send(ctx, ctx->_tx_buf, req_len) != ESP_OK)
         return MODBUS_ERR_UART;
 
-    // Expected response size: [slave][fc][byte_count][data...][crc_lo][crc_hi]
+    // expected response size: [slave][fc][byte_count][data...][crc_lo][crc_hi]
     uint8_t *buf = ctx->_rx_buf;
     int header = uart_recv(ctx, buf, 3, ctx->cfg.response_timeout_ms);
     if (header < 3) return MODBUS_ERR_TIMEOUT;
@@ -179,7 +179,7 @@ static modbus_err_t master_read(modbus_ctx_t *ctx, uint8_t slave, uint8_t fc,
     return MODBUS_OK;
 }
 
-// ─── Master: generic write (single/multiple) ─────────────────────────────────
+// ─── master: generic write (single/multiple) ─────────────────────────────────
 
 static modbus_err_t master_write_single(modbus_ctx_t *ctx, uint8_t slave,
                                          uint8_t fc, uint16_t addr, uint16_t value)
@@ -235,7 +235,7 @@ static modbus_err_t master_write_multiple(modbus_ctx_t *ctx, uint8_t slave,
     return check_response_crc(rbuf, 8);
 }
 
-// ─── Master public API ───────────────────────────────────────────────────────
+// ─── master public api ───────────────────────────────────────────────────────
 
 modbus_err_t modbus_read_coils(modbus_ctx_t *ctx, uint8_t slave,
                                 uint16_t start, uint16_t count, uint8_t *out)
@@ -318,7 +318,7 @@ modbus_err_t modbus_write_multiple_regs(modbus_ctx_t *ctx, uint8_t slave,
                                  start, count, payload, count * 2);
 }
 
-// ─── Slave ───────────────────────────────────────────────────────────────────
+// ─── slave ───────────────────────────────────────────────────────────────────
 
 static void slave_send_exception(modbus_ctx_t *ctx, uint8_t fc, uint8_t ex_code)
 {
@@ -344,24 +344,24 @@ modbus_err_t modbus_slave_poll(modbus_ctx_t *ctx)
 {
     uint8_t *buf = ctx->_rx_buf;
 
-    // Receive header: [addr][fc][hi][lo][...][crc_lo][crc_hi]
-    // Minimum frame: 4 bytes data + 2 CRC = 8 for most FCs
+    // receive header: [addr][fc][hi][lo][...][crc_lo][crc_hi]
+    // min frame: 4 bytes data + 2 crc = 8 for most FCs
     int n = uart_recv(ctx, buf, 8, portMAX_DELAY);
     if (n < 8) return MODBUS_ERR_TIMEOUT;
 
-    // Drain any remaining bytes (e.g., FC0F/FC10 with payload)
-    // For write-multiple FCs the frame is longer; read remaining bytes
+    // drain any remaining bytes (fc0f/fc10 with payload)
+    // For write-multiple fcs the frame is longer; read remaining bytes
     uint8_t fc = buf[1];
     if (fc == MODBUS_FC_WRITE_MULTIPLE_COILS || fc == MODBUS_FC_WRITE_MULTIPLE_REGS) {
         int extra = uart_recv(ctx, buf + 8, MODBUS_MAX_ADU_SIZE - 8, 20);
         n += extra;
     }
 
-    // Filter by address
+    // filter by address
     if (buf[0] != ctx->cfg.slave_addr && buf[0] != MODBUS_BROADCAST_ADDR)
         return MODBUS_OK; // silently ignore
 
-    // CRC check
+    // crc check
     if (check_response_crc(buf, n) != MODBUS_OK)
         return MODBUS_ERR_CRC;
 
@@ -470,7 +470,7 @@ modbus_err_t modbus_slave_poll(modbus_ctx_t *ctx)
     return MODBUS_OK;
 }
 
-// ─── Utilities ───────────────────────────────────────────────────────────────
+// ─── utils ───────────────────────────────────────────────────────────────
 
 const char *modbus_strerror(modbus_err_t err)
 {
