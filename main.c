@@ -22,32 +22,32 @@
 
 #define GPIO_COIL_0     GPIO_NUM_18
 #define GPIO_COIL_1     GPIO_NUM_19
-#define GPIO_DIN_0      GPIO_NUM_34   // input only on most ESP32s
+#define GPIO_DIN_0      GPIO_NUM_34   // input only on most esp32s
 
 static modbus_ctx_t mb;
 
-// Called from modbus_slave_poll() whenever a write FC completes.
+// called from modbus_slave_poll() whenever a write fc completes.
 static void on_write(modbus_ctx_t *ctx, uint8_t fc, uint16_t start_addr, uint16_t count)
 {
     ESP_LOGI(TAG, "write fc=0x%02X addr=%u count=%u", fc, start_addr, count);
 
-    // Mirror coil[0] and coil[1] to GPIO outputs
+    // mirror coil[0] and coil[1] to gpio outputs
     if (fc == MODBUS_FC_WRITE_SINGLE_COIL || fc == MODBUS_FC_WRITE_MULTIPLE_COILS) {
         gpio_set_level(GPIO_COIL_0, ctx->data.coils[0]);
         gpio_set_level(GPIO_COIL_1, ctx->data.coils[1]);
     }
 }
 
-// Background task: updates input registers from hardware.
+// bg task: updates input registers from hardware.
 static void sensor_task(void *arg)
 {
     uint32_t uptime = 0;
     while (1) {
-        // Fake ADC read — replace with adc_oneshot_read() for real use
+        // fake adc read — replace with adc_oneshot_read() for real use
         mb.data.input_regs[0] = (uint16_t)(esp_random() & 0x0FFF);
         mb.data.input_regs[1] = (uint16_t)(uptime & 0xFFFF);
 
-        // Sample discrete input from GPIO
+        // sample discrete input from gpio
         mb.data.discrete_inputs[0] = gpio_get_level(GPIO_DIN_0);
 
         uptime++;
@@ -55,7 +55,7 @@ static void sensor_task(void *arg)
     }
 }
 
-// Slave poll task — blocks waiting for requests.
+// slave poll task — blocks waiting for requests.
 static void slave_task(void *arg)
 {
     while (1) {
@@ -68,7 +68,7 @@ static void slave_task(void *arg)
 
 void app_main(void)
 {
-    // GPIO setup
+    // gpio setup
     gpio_config_t out_cfg = {
         .pin_bit_mask = (1ULL << GPIO_COIL_0) | (1ULL << GPIO_COIL_1),
         .mode         = GPIO_MODE_OUTPUT,
@@ -82,7 +82,7 @@ void app_main(void)
     };
     gpio_config(&in_cfg);
 
-    // Modbus init
+    // modbus init
     modbus_config_t cfg = {
         .uart_port           = UART_NUM_1,
         .tx_pin              = 17,
@@ -100,7 +100,7 @@ void app_main(void)
         return;
     }
 
-    // Pre-populate some holding registers
+    // pre-populate some holding registers
     mb.data.holding_regs[0] = 0xDEAD;
     mb.data.holding_regs[1] = 0xBEEF;
 
