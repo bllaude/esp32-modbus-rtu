@@ -1,9 +1,9 @@
 # esp32-modbus-rtu
 
-Modbus RTU master/slave library for ESP-IDF. No external dependencies, built as an IDF component.
+Modbus RTU master/slave library for ESP-IDF.
 
 - Full master and slave roles in one component
-- Function codes: FC01 FC02 FC03 FC04 FC05 FC06 FC0F FC10
+- Function codes: `FC01` `FC02` `FC03` `FC04` `FC05` `FC06` `FC0F` `FC10`
 - CRC16 with hardware-validated test vectors
 - RS485 DE/RE direction control via configurable GPIO
 - Slave data model: coils, discrete inputs, holding registers, input registers
