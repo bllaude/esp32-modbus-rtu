@@ -1,0 +1,10 @@
+description: Modbus RTU protocol implementation for ESP-IDF supporting both master and slave modes with RS485 hardware control
+url: https://github.com/bllaude/esp-modbus-rtu
+version: 1.0.0
+license: MIT
+dependencies:
+  idf: ">=4.4"
+files:
+  exclude:
+    - "*.md"
+    - ".gitignore"
