@@ -1,8 +1,26 @@
+# Build artifacts
 build/
+components/
+project_description.json
 sdkconfig
 sdkconfig.old
+
+# Cache files
+*.cache
+.ccache/
+__pycache__/
+
+# IDE files
 .vscode/
+.idea/
 *.swp
-*.orig
-managed_components/
-dependencies.lock
+*.swo
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
